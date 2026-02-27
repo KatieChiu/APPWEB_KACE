@@ -16,6 +16,11 @@
             background-image: radial-gradient(circle at top right, #1e1b4b, #0f172a);
             min-height: 100vh;
         }
+
+        input:focus, textarea:focus {
+            border-color: #22d3ee;
+            box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.2);
+        }
     </style>
 </head>
 <body class="text-slate-200 font-sans">
@@ -29,20 +34,29 @@
         </header>
 
         <section class="max-w-2xl mx-auto mb-16">
-            <div class="bg-white/5 p-2 rounded-2xl border border-white/10 shadow-2xl backdrop-blur-sm">
+            <div class="bg-white/5 p-3 md:p-2 rounded-2xl border border-white/10 shadow-2xl backdrop-blur-sm">
                 <form hx-post="/generar" 
                       hx-target="#resultado" 
                       hx-indicator="#loading"
-                      class="flex flex-col md:flex-row gap-2">
-                    <input type="text" 
-                           name="prompt" 
-                           placeholder="Ej: Un gato astronauta estilo cyberpunk..." 
+                      class="flex flex-col gap-3">
+
+                    <input type="email" 
+                           name="email" 
+                           placeholder="Tu correo electrónico" 
                            required
-                           class="flex-1 bg-transparent p-4 outline-none text-white placeholder-slate-500">
-                    <button type="submit" 
-                            class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold px-8 py-4 rounded-xl transition-all transform active:scale-95 shadow-lg">
-                        Generar Diseños
-                    </button>
+                           class="bg-transparent p-4 rounded-xl outline-none text-white placeholder-slate-500 border border-white/20 focus:border-cyan-400">
+
+                    <div class="flex flex-col md:flex-row gap-2">
+                        <input type="text" 
+                               name="prompt" 
+                               placeholder="Ej: Un gato astronauta estilo cyberpunk..." 
+                               required
+                               class="flex-1 bg-transparent p-4 rounded-xl outline-none text-white placeholder-slate-500 border border-white/20 focus:border-cyan-400">
+                        <button type="submit" 
+                                class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold px-8 py-4 rounded-xl transition-all transform active:scale-95 shadow-lg">
+                            Generar Diseños
+                        </button>
+                    </div>
                 </form>
             </div>
 
@@ -61,7 +75,7 @@
         </main>
 
         <footer class="mt-20 text-center text-slate-600 text-sm">
-            <p>&copy; 2025 Tote Custom IA - Impresión bajo demanda con IA</p>
+            <p>© 2025 </p>
         </footer>
     </div>
 
