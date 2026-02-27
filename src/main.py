@@ -3,6 +3,9 @@ from fastapi.responses import HTMLResponse
 from dotenv import load_dotenv
 import os
 import urllib.parse
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 load_dotenv()
 
@@ -10,6 +13,35 @@ app = FastAPI()
 
 os.makedirs("templates", exist_ok=True)
 os.makedirs("static", exist_ok=True)
+
+
+def send_email(subject: str, body: str) -> bool:
+    sender = os.getenv("SMTP_SENDER")
+    password = os.getenv("SMTP_PASSWORD")
+    smtp_server = os.getenv("SMTP_SERVER")
+    smtp_port = int(os.getenv("SMTP_PORT", 587))
+    recipient = os.getenv("EMAIL_TO")
+
+    if not all([sender, password, smtp_server, recipient]):
+        print("Faltan variables SMTP en .env")
+        return False
+
+    msg = MIMEMultipart()
+    msg["From"] = sender
+    msg["To"] = recipient
+    msg["Subject"] = subject
+    msg.attach(MIMEText(body, "plain"))
+
+    try:
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(sender, password)
+        server.sendmail(sender, recipient, msg.as_string())
+        server.quit()
+        return True
+    except Exception as e:
+        print(f"Error enviando email: {e}")
+        return False
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -28,7 +60,7 @@ async def generar(
     
     api_key = os.getenv("key_API")
     if not api_key:
-        return HTMLResponse(content="<p class='text-red-400 text-center text-xl'>Error: API key no configurada en .env</p>")
+        return HTMLResponse(content="<p class='text-red-400 text-center text-xl'>Error: API key no configurada en .env (key_API)</p>")
 
     img_html = ""
     for i in range(4):
@@ -126,6 +158,31 @@ async def enviar(
     prompt: str = Form(...),
     email: str = Form(...)
 ):
+    # Construir el cuerpo del email
+    body = f"""
+¡Nuevo pedido de totes recibido!
+
+Cliente: {nombre}
+Correo: {email}
+Teléfono/WhatsApp: {telefono}
+Dirección: {direccion}
+Cantidad: {cantidad} totes
+
+Prompt utilizado: {prompt}
+Imagen seleccionada: {imagen}
+Ver imagen: {imagen}
+
+¡Gracias por el pedido! Coordina pago y entrega pronto.
+    """.strip()
+
+    subject = f"Nuevo Pedido - {nombre} - {cantidad} totes"
+
+    success = send_email(subject, body)
+
+    if success:
+        mensaje = f"Solicitud de {cantidad} tote(s) enviada correctamente a nuestro correo."
+    else:
+        mensaje = f"Pedido recibido, pero hubo un problema al enviar el correo. Contacta directamente por WhatsApp."
 
     return f"""
     <div class='text-center py-20 animate-in zoom-in duration-500'>
@@ -135,7 +192,7 @@ async def enviar(
             </svg>
         </div>
         <h2 class='text-4xl font-bold text-white mb-4'>¡Pedido recibido!</h2>
-        <p class='text-xl text-cyan-300 mb-8'>Solicitud de {cantidad} tote(s) enviada correctamente</p>
+        <p class='text-xl text-cyan-300 mb-8'>{mensaje}</p>
         
         <div class='mt-8 text-slate-300 space-y-4 max-w-md mx-auto'>
             <p class='text-lg'>Gracias, <strong>{nombre}</strong></p>
