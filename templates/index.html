@@ -10,16 +10,19 @@
         .htmx-indicator { display: none; }
         .htmx-request .htmx-indicator { display: block; }
         .htmx-request.htmx-indicator { display: block; }
-        
+       
         body {
             background-color: #0f172a;
             background-image: radial-gradient(circle at top right, #1e1b4b, #0f172a);
             min-height: 100vh;
         }
+        input:focus, textarea:focus {
+            border-color: #22d3ee;
+            box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.2);
+        }
     </style>
 </head>
 <body class="text-slate-200 font-sans">
-
     <div class="container mx-auto px-4 py-12 max-w-5xl">
         <header class="text-center mb-16">
             <h1 class="text-5xl md:text-6xl font-black mb-4 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-fuchsia-500">
@@ -27,25 +30,30 @@
             </h1>
             <p class="text-slate-400 text-lg">Diseña tu KACE tote bag con inteligencia artificial en segundos</p>
         </header>
-
         <section class="max-w-2xl mx-auto mb-16">
-            <div class="bg-white/5 p-2 rounded-2xl border border-white/10 shadow-2xl backdrop-blur-sm">
-                <form hx-post="/generar" 
-                      hx-target="#resultado" 
+            <div class="bg-white/5 p-3 md:p-2 rounded-2xl border border-white/10 shadow-2xl backdrop-blur-sm">
+                <form hx-post="/generar"
+                      hx-target="#resultado"
                       hx-indicator="#loading"
-                      class="flex flex-col md:flex-row gap-2">
-                    <input type="text" 
-                           name="prompt" 
-                           placeholder="Ej: Un gato astronauta estilo cyberpunk..." 
+                      class="flex flex-col gap-3">
+                    <input type="email"
+                           name="email"
+                           placeholder="Tu correo electrónico"
                            required
-                           class="flex-1 bg-transparent p-4 outline-none text-white placeholder-slate-500">
-                    <button type="submit" 
-                            class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold px-8 py-4 rounded-xl transition-all transform active:scale-95 shadow-lg">
-                        Generar Diseños
-                    </button>
+                           class="bg-transparent p-4 rounded-xl outline-none text-white placeholder-slate-500 border border-white/20 focus:border-cyan-400">
+                    <div class="flex flex-col md:flex-row gap-2">
+                        <input type="text"
+                               name="prompt"
+                               placeholder="Ej: Un gato astronauta estilo cyberpunk..."
+                               required
+                               class="flex-1 bg-transparent p-4 rounded-xl outline-none text-white placeholder-slate-500 border border-white/20 focus:border-cyan-400">
+                        <button type="submit"
+                                class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold px-8 py-4 rounded-xl transition-all transform active:scale-95 shadow-lg">
+                            Generar Diseños
+                        </button>
+                    </div>
                 </form>
             </div>
-
             <div id="loading" class="htmx-indicator mt-8 text-center">
                 <div class="flex flex-col items-center gap-4">
                     <div class="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
@@ -53,17 +61,76 @@
                 </div>
             </div>
         </section>
-
         <main id="resultado" class="min-h-[200px] transition-all duration-700">
             <div class="text-center text-slate-500 mt-20">
                 <p>Aún no hay diseños. ¡Escribe algo arriba y comienza!</p>
             </div>
         </main>
-
         <footer class="mt-20 text-center text-slate-600 text-sm">
-            <p>&copy; 2025 Tote Custom IA - Impresión bajo demanda con IA</p>
+            <p>© 2025 </p>
         </footer>
     </div>
 
+
+    <script>
+    function elegir(url, p, email) {
+        const target = document.getElementById('resultado');
+        target.innerHTML = `
+        <div class='bg-white/10 backdrop-blur-xl p-8 rounded-3xl border border-white/20 max-w-lg mx-auto shadow-2xl mt-12 mb-12 animate-in slide-in-from-bottom duration-500'>
+            <h3 class='text-2xl font-bold mb-6 text-center text-white'>Detalles del Pedido</h3>
+            <form hx-post='/carrito' hx-target='#resultado' class='space-y-5'>
+                <input type='hidden' name='imagen' value='" + url + "'>
+                <input type='hidden' name='prompt' value='" + p.replace(/"/g, '&quot;') + "'>
+                <input type='hidden' name='email' value='" + email.replace(/"/g, '&quot;') + "'>
+                
+                <div>
+                    <label class='text-xs text-slate-400 ml-2 block mb-1'>Nombre completo</label>
+                    <input type='text' name='nombre' placeholder='Tu nombre' required class='w-full p-4 rounded-xl bg-black/40 text-white border border-white/10 focus:border-cyan-400 outline-none'>
+                </div>
+                
+                <div>
+                    <label class='text-xs text-slate-400 ml-2 block mb-1'>Teléfono / WhatsApp</label>
+                    <input type='tel' name='telefono' placeholder='+504 9999-9999' required class='w-full p-4 rounded-xl bg-black/40 text-white border border-white/10 focus:border-cyan-400 outline-none'>
+                </div>
+
+                <div>
+                    <label class='text-xs text-slate-400 ml-2 block mb-1'>Dirección exacta</label>
+                    <textarea name='direccion' placeholder='Barrio, calle, casa, referencias...' required class='w-full p-4 rounded-xl bg-black/40 text-white border border-white/10 focus:border-cyan-400 outline-none h-28'></textarea>
+                </div>
+
+                <div>
+                    <label class='text-xs text-slate-400 ml-2 block mb-1'>Material de impresión</label>
+                    <div class="grid grid-cols-2 gap-4 mt-2">
+                        <label class="flex flex-col items-center p-4 rounded-xl bg-black/40 border-2 border-transparent has-[:checked]:border-cyan-400 cursor-pointer transition-all">
+                            <input type="radio" name="material" value="sublimacion" required class="peer hidden">
+                            <span class="font-medium text-white">Sublimación</span>
+                            <span class="text-sm text-cyan-400">L 240 c/u</span>
+                        </label>
+                        <label class="flex flex-col items-center p-4 rounded-xl bg-black/40 border-2 border-transparent has-[:checked]:border-cyan-400 cursor-pointer transition-all">
+                            <input type="radio" name="material" value="dtf" class="peer hidden">
+                            <span class="font-medium text-white">DTF</span>
+                            <span class="text-sm text-cyan-400">L 350 c/u</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class='text-xs text-slate-400 ml-2 block mb-1'>Cantidad de totes</label>
+                    <input type='number' name='cantidad' value='1' min='1' required class='w-full p-4 rounded-xl bg-black/40 text-white border border-white/10 focus:border-cyan-400 outline-none'>
+                </div>
+
+                <button type='submit' class='w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-5 rounded-2xl transition transform hover:scale-[1.02] active:scale-95 shadow-lg text-lg mt-4'>
+                    Ver carrito y continuar →
+                </button>
+            </form>
+        </div>`;
+
+        htmx.process(target);
+
+        setTimeout(() => {
+            target.scrollIntoView({behavior: 'smooth', block: 'center'});
+        }, 200);
+    }
+    </script>
 </body>
 </html>
